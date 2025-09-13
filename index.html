@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Map</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 50px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #34495e;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        #start-person {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .map-output {
+            text-align: left;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        #social-map-results {
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Social Map</h1>
+        <div class="map-output">
+            <h2>Degrees of Separation for <span id="start-person"></span></h2>
+            <pre id="social-map-results"></pre>
+        </div>
+    </div>
+
+    <script>
+        const peopleNetwork = {
+            "Alice": ["Bob", "Charlie"],
+            "Bob": ["Alice", "David", "Eve"],
+            "Charlie": ["Alice", "Frank"],
+            "David": ["Bob", "Grace"],
+            "Eve": ["Bob", "Harry"],
+            "Frank": ["Charlie", "Isabelle"],
+            "Grace": ["David"],
+            "Harry": ["Eve"],
+            "Isabelle": ["Frank", "Jack"],
+            "Jack": ["Isabelle"]
+        };
+
+        function buildSocialMap(network, startPerson) {
+            const queue = [{ person: startPerson, distance: 0 }];
+            const visited = new Set([startPerson]);
+            const distances = { [startPerson]: 0 };
+
+            let head = 0;
+            while (head < queue.length) {
+                const { person, distance } = queue[head++];
+                const neighbors = network[person] || [];
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor)) {
+                        visited.add(neighbor);
+                        distances[neighbor] = distance + 1;
+                        queue.push({ person: neighbor, distance: distance + 1 });
+                    }
+                }
+            }
+            return distances;
+        }
+
+        function displaySocialMap(distances, startPerson) {
+            const outputElement = document.getElementById('social-map-results');
+            const startPersonElement = document.getElementById('start-person');
+            
+            outputElement.textContent = '';
+            
+            startPersonElement.textContent = startPerson;
+
+            const sortedPeople = Object.keys(distances).sort((a, b) => distances[a] - distances[b]);
+
+            let outputText = '';
+            sortedPeople.forEach(person => {
+                if (person !== startPerson) {
+                    outputText += `- ${person}: ${distances[person]} degrees of separation\n`;
+                }
+            });
+
+            outputElement.textContent = outputText;
+        }
+
+        // --- Example Usage ---
+        const startingPerson = "Alice";
+
+        const socialDistances = buildSocialMap(peopleNetwork, startingPerson);
+
+        displaySocialMap(socialDistances, startingPerson);
+    </script>
+</body>
+</html>
